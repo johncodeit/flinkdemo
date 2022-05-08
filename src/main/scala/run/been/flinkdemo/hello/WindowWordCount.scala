@@ -6,6 +6,7 @@ import org.apache.flink.streaming.api.windowing.time.Time
 
 /**
  * https://nightlies.apache.org/flink/flink-docs-release-1.15/docs/dev/datastream/overview/
+ * word count 开始学习flink编程的DataStream API
  */
 object WindowWordCount {
   def main(args: Array[String]) {
