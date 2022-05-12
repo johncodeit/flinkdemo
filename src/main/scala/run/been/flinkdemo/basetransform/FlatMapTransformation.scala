@@ -1,6 +1,5 @@
 package run.been.flinkdemo.basetransform
 
-import org.apache.flink.api.common.functions.MapFunction
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment, createTypeInformation}
 import run.been.flinkdemo.util.{SensorReading, SensorSource}
 
@@ -12,7 +11,7 @@ import run.been.flinkdemo.util.{SensorReading, SensorSource}
  * @createTime:2022/5/9 20:25
  * @version:1.0
  */
-object FilterTransformation {
+object FlatMapTransformation {
 
 
   def main(args: Array[String]): Unit = {
@@ -22,17 +21,22 @@ object FilterTransformation {
       // SensorSource generates random temperature readings
       .addSource(new SensorSource)
 
-    val sensorIds = filter1(readings)
+    val sensorIds = flatMap(readings)
     sensorIds.print()
 
     env.execute("Base transformation map ")
   }
 
-  private def filter1(readings: DataStream[SensorReading]) = {
-    //filter 大于30度的保留
-    val sensorIds: DataStream[SensorReading] = readings
-      .filter(r => r.temperature >30 )
+  private def flatMap(readings: DataStream[SensorReading]) = {
+    //flatMap:将id进行切分，id和传感器分开
+    val sensorIds: DataStream[String] = readings.map(r =>r.id).flatMap(id => id.split("_"))
     sensorIds
   }
+  /**
+   * 8> 79
+8> sensor
+8> 80
+3> sensor
+   **/
 
 }
