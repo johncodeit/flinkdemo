@@ -1,7 +1,9 @@
 package run.been.flinkdemo.basetransform
 
 import org.apache.flink.api.common.functions.MapFunction
+import org.apache.flink.streaming.api.functions.sink.filesystem.StreamingFileSink
 import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment, createTypeInformation}
+import org.slf4j.Logger
 import run.been.flinkdemo.util.{SensorReading, SensorSource}
 
 /**
@@ -15,6 +17,7 @@ import run.been.flinkdemo.util.{SensorReading, SensorSource}
 object FilterTransformation {
 
 
+
   def main(args: Array[String]): Unit = {
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 
@@ -24,7 +27,6 @@ object FilterTransformation {
 
     val sensorIds = filter1(readings)
     sensorIds.print()
-
     env.execute("Base transformation map ")
 
   }
