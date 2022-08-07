@@ -57,6 +57,12 @@ under the License.
 			<artifactId>flink-walkthrough-common</artifactId>
 			<version>${flink.version}</version>
 		</dependency>
+		<!-- web ui的依赖-->
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-runtime-web</artifactId>
+			<version>${flink.version}</version>
+		</dependency>
 
 		<!-- Apache Flink dependencies -->
 		<!-- These dependencies are provided, because they should not be packaged into the JAR file. -->

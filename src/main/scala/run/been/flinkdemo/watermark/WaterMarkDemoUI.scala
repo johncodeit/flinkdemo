@@ -1,16 +1,19 @@
 package run.been.flinkdemo.watermark
 
-
 import org.apache.flink.api.common.eventtime.{SerializableTimestampAssigner, WatermarkStrategy}
+import org.apache.flink.configuration.Configuration
 import org.apache.flink.streaming.api.functions.ProcessFunction
-import org.apache.flink.streaming.api.scala.{DataStream, StreamExecutionEnvironment, WindowedStream, createTypeInformation}
+import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, createTypeInformation}
 import org.apache.flink.util.Collector
 import run.been.flinkdemo.util.SensorReading
 
 import java.time.Duration
 
-
-object WaterMarkDemo {
+/**
+ *
+ *
+ */
+object WaterMarkDemoUI {
 
   def test02(env: StreamExecutionEnvironment) = {
     /**
@@ -36,21 +39,22 @@ object WaterMarkDemo {
     inputStream.process(new ProcessFunction[SensorReading,SensorReading] {
       override def processElement(value: SensorReading, ctx: ProcessFunction[SensorReading, SensorReading]#Context, out: Collector[SensorReading]): Unit = {
         //数据时间戳
-        println("本次时间收到的时间："+value.timestamp)
-        println("本次数据"+ value)
+//        println("本次时间收到的时间："+value.timestamp)
+//        println("本次数据"+ value)
         //获取处理时间
         val processTime = ctx.timerService().currentProcessingTime()
-        println("此刻处理时间 = " + processTime)
+//        println("此刻处理时间 = " + processTime)
         //获取水印
         val watermarkTime = ctx.timerService().currentWatermark()
-        println("此刻水印时间 = " + watermarkTime)
+//        println("此刻水印时间 = " + watermarkTime)
       }
     }).print()
 
   }
 
   def main(args: Array[String]): Unit = {
-    val env = StreamExecutionEnvironment.getExecutionEnvironment
+    val conf = new Configuration()
+    val env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(conf)
     env.setParallelism(1)
     println(env.getParallelism)
     test02(env)
