@@ -62,15 +62,15 @@ public class BoundedOutOfOrdernessWatermarks<T> implements WatermarkGenerator<T>
 
     @Override
     public void onEvent(T event, long eventTimestamp, WatermarkOutput output) {
-        System.out.println("onEvent current time = " + LocalDateTime.now());
-        System.out.println("onEvent maxTimestamp " + maxTimestamp);
+//        System.out.println("onEvent current time = " + LocalDateTime.now());
+//        System.out.println("onEvent maxTimestamp " + maxTimestamp);
         maxTimestamp = Math.max(maxTimestamp, eventTimestamp);
     }
 
     @Override
     public void onPeriodicEmit(WatermarkOutput output) {
-        System.out.println("onPeriodicEmit current time = " + LocalDateTime.now());
-        System.out.println("onPeriodicEmit maxTimestamp " + maxTimestamp);
+//        System.out.println("onPeriodicEmit current time = " + LocalDateTime.now());
+//        System.out.println("onPeriodicEmit maxTimestamp " + maxTimestamp);
         output.emitWatermark(new Watermark(maxTimestamp - outOfOrdernessMillis - 1));
     }
 }

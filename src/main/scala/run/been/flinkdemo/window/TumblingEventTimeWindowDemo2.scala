@@ -38,7 +38,7 @@ object TumblingEventTimeWindowDemo2 {
     val windowStream: WindowedStream[SensorReading, String, TimeWindow] = inputStream
       .keyBy(x => x.id)
       .window(TumblingEventTimeWindows.of(Time.seconds(5)))//5秒钟是一个滚动窗口
-
+//      .evictor()
     //获取温度总和，没过5分钟滑动一次窗口
     val reduceWindowStream: DataStream[SensorReading] = windowStream
       .reduce((newSensor, oldSensor) => SensorReading(oldSensor.id,oldSensor.timestamp,oldSensor.temperature + newSensor.temperature))

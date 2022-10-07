@@ -1,4 +1,5 @@
-package run.been.flinkdemo.watermark
+package run.been.flinkdemo.process
+
 
 import org.apache.flink.api.common.eventtime.{SerializableTimestampAssigner, WatermarkStrategy}
 import org.apache.flink.configuration.Configuration
@@ -13,7 +14,7 @@ import java.time.Duration
  *
  *
  */
-object WaterMarkDemoUI {
+object ProcessFunctionDemo {
 
   def test02(env: StreamExecutionEnvironment) = {
     /**
@@ -61,45 +62,3 @@ object WaterMarkDemoUI {
     env.execute("window job")
   }
 }
-
-
-/**
- * 输入数据
- * sensor_1,2000,1.0
-sensor_1,3000,2.0
-sensor_1,4000,5.0
-sensor_1,2000,3.0
-sensor_1,5000,4.0
- */
-
-/**
- *
- * SensorReading(sensor_1,2000,1.0)
-本次时间收到的时间：2000
-本次数据SensorReading(sensor_1,2000,1.0)
-此刻处理时间 = 1658848170282
-此刻水印时间 = -9223372036854775808
-
-再次重新执行，第一次水印时间：此刻水印时间 = -9223372036854775808，所以应该是一个固定时间
-SensorReading(sensor_1,3000,2.0)
-本次时间收到的时间：3000
-本次数据SensorReading(sensor_1,3000,2.0)
-此刻处理时间 = 1658848179445
-此刻水印时间 = 1999
-SensorReading(sensor_1,4000,5.0)
-本次时间收到的时间：4000
-本次数据SensorReading(sensor_1,4000,5.0)
-此刻处理时间 = 1658848250156
-此刻水印时间 = 2999
-SensorReading(sensor_1,2000,3.0)
-本次时间收到的时间：2000
-本次数据SensorReading(sensor_1,2000,3.0)
-此刻处理时间 = 1658848502883
-此刻水印时间 = 3999
-SensorReading(sensor_1,5000,4.0)
-本次时间收到的时间：5000
-本次数据SensorReading(sensor_1,5000,4.0)
-此刻处理时间 = 1658848521186
-此刻水印时间 = 3999
- */
-

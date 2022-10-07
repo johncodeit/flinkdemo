@@ -24,8 +24,6 @@ object ListStateFunctionDemo {
     // checkpoint every 10 seconds
     env.getCheckpointConfig.setCheckpointInterval(2 * 1000)
 
-
-
     /**
      * 定义水印生成策略
      */
@@ -44,7 +42,7 @@ object ListStateFunctionDemo {
     val keyedSensorData: KeyedStream[SensorReading, String] = sensorData.keyBy(_.id)
 
     val alerts = keyedSensorData
-      .flatMap(new TemperatureListAlertFunction(1.8,3))
+      .flatMap(new TemperatureListAlertFunction(1.8, 3))
 
 
     // print result stream to standard out
@@ -56,13 +54,13 @@ object ListStateFunctionDemo {
 }
 
 /**
-  * The function emits an alert if the temperature measurement of a sensor changed by more than
-  * a configured threshold compared to the last reading.
-  *
-  * @param threshold The threshold to raise an alert.
-  */
-class TemperatureListAlertFunction(val threshold: Double,val numberOfTimes: Int)
-    extends RichFlatMapFunction[SensorReading, util.ArrayList[SensorReading]] {
+ * The function emits an alert if the temperature measurement of a sensor changed by more than
+ * a configured threshold compared to the last reading.
+ *
+ * @param threshold The threshold to raise an alert.
+ */
+class TemperatureListAlertFunction(val threshold: Double, val numberOfTimes: Int)
+  extends RichFlatMapFunction[SensorReading, util.ArrayList[SensorReading]] {
 
   // the state handle object
   private var listStateCount: ListState[SensorReading] = _
@@ -74,7 +72,7 @@ class TemperatureListAlertFunction(val threshold: Double,val numberOfTimes: Int)
     listStateCount = getRuntimeContext.getListState[SensorReading](listStateCountDescriptor)
   }
 
-   override def flatMap(reading: SensorReading, out: Collector[util.ArrayList[SensorReading]]): Unit = {
+  override def flatMap(reading: SensorReading, out: Collector[util.ArrayList[SensorReading]]): Unit = {
 
     //输入值
     //获取当前温度
@@ -86,7 +84,7 @@ class TemperatureListAlertFunction(val threshold: Double,val numberOfTimes: Int)
     }
     val list = Lists.newArrayList(listStateCount.get().iterator())
     //如果不正常的值超过给定次数，就发出报警
-    if(list.size() >= numberOfTimes){
+    if (list.size() >= numberOfTimes) {
       out.collect(list)
       //清空list状态集合
       listStateCount.clear()
@@ -95,11 +93,12 @@ class TemperatureListAlertFunction(val threshold: Double,val numberOfTimes: Int)
 }
 
 /**
+ * 输入
  * sensor_1,2000,1.0
-sensor_1,7000,1.0
-sensor_1,3000,2.0
-sensor_1,4000,5.0
-sensor_1,5000,4.0
+ * sensor_1,7000,1.0
+ * sensor_1,3000,2.0
+ * sensor_1,4000,5.0
+ * sensor_1,5000,4.0
  */
 
 /**

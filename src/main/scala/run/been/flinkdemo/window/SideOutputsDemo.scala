@@ -5,6 +5,8 @@ import org.apache.flink.api.common.eventtime.{SerializableTimestampAssigner, Wat
 import org.apache.flink.api.scala._
 import org.apache.flink.streaming.api.functions.ProcessFunction
 import org.apache.flink.streaming.api.scala.{DataStream, OutputTag, StreamExecutionEnvironment}
+import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows
+import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.util.Collector
 import run.been.flinkdemo.util.{SensorReading, SensorSource, SensorTimeAssigner}
 
@@ -16,60 +18,81 @@ object SideOutputs {
 
     // set up the streaming execution environment
     val env = StreamExecutionEnvironment.getExecutionEnvironment
-
-    // checkpoint every 10 seconds
-    env.getCheckpointConfig.setCheckpointInterval(10 * 1000)
-
-    // configure watermark interval
-//    env.getConfig.setAutoWatermarkInterval(1000L)
-
+    env.setParallelism(1)
     /**
      * 定义水印生成策略
      */
-    val strategy = WatermarkStrategy.forBoundedOutOfOrderness[SensorReading](Duration.ofMillis(5)) //延迟0秒
+    val strategy = WatermarkStrategy.forBoundedOutOfOrderness[SensorReading](Duration.ofSeconds(3)) //延迟5秒
       .withTimestampAssigner(new SerializableTimestampAssigner[SensorReading] {
         override def extractTimestamp(t: SensorReading, l: Long): Long = t.timestamp //指定事件时间字段
       })
 
-    // ingest sensor stream
-    val readings: DataStream[SensorReading] = env
-      // SensorSource generates random temperature readings
-      .addSource(new SensorSource)
-      // assign timestamps and watermarks which are required for event time
-      .assignTimestampsAndWatermarks(strategy)
+    val inputStream = env.socketTextStream("localhost", 9999)
+      .map { text =>
+        val arr: Array[String] = text.split(",")
+        SensorReading(arr(0), arr(1).toLong, arr(2).toDouble)
+      }.assignTimestampsAndWatermarks(strategy)
 
-    val monitoredReadings: DataStream[SensorReading] = readings
-      // monitor stream for readings with freezing temperatures
-      .process(new FreezingMonitor)
+    inputStream.print()
+    val outputTage = new OutputTag[SensorReading]("later data")
 
-    // retrieve and print the freezing alarms
-    monitoredReadings
-      .getSideOutput(new OutputTag[String]("freezing-alarms"))
-      .print()
+    val sumResult = inputStream.keyBy(_.id)
+      .window(SlidingEventTimeWindows.of(Time.seconds(10), Time.seconds(5))) //10秒一个窗口，每5秒钟是一个滑动一次
+      .allowedLateness(Time.seconds(2))
+      .sideOutputLateData(outputTage)
+      .reduce((newSensor, oldSensor) => SensorReading(oldSensor.id,oldSensor.timestamp,oldSensor.temperature + newSensor.temperature))
 
-    // print the main output
-    readings.print()
+
+    sumResult.print("main stream ")
+
+    val sideOutput = sumResult.getSideOutput(outputTage)
+    sideOutput.print("side output stream ")
 
     env.execute()
   }
 }
 
-/** Emits freezing alarms to a side output for readings with a temperature below 32F. */
-class FreezingMonitor extends ProcessFunction[SensorReading, SensorReading] {
+/**
+ * 输入数据
+ * sensor_1,2000,1.0
+sensor_1,7000,1.0
+sensor_1,8000,1.0
+sensor_1,9000,1.0
+sensor_1,10000,1.0
+sensor_1,12000,1.0
+sensor_1,13000,1.0
+sensor_1,6000,1.0
+sensor_1,7500,1.0
+sensor_1,12000,1.0
+sensor_1,13000,1.0
+sensor_1,15000,1.0
+sensor_1,17000,1.0
+sensor_1,18000,1.0
+sensor_1,1000,1.0
+ */
 
-  // define a side output tag
-  lazy val freezingAlarmOutput: OutputTag[String] =
-    new OutputTag[String]("freezing-alarms")
+/**
+ * 输出结果
+ * SensorReading(sensor_1,2000,1.0)
+SensorReading(sensor_1,7000,1.0)
+SensorReading(sensor_1,8000,1.0)
+main stream > SensorReading(sensor_1,2000,1.0)
+SensorReading(sensor_1,9000,1.0)
+SensorReading(sensor_1,10000,1.0)
+SensorReading(sensor_1,12000,1.0)
+SensorReading(sensor_1,13000,1.0)
+main stream > SensorReading(sensor_1,9000,4.0)
+SensorReading(sensor_1,6000,1.0)
+main stream > SensorReading(sensor_1,6000,5.0)
+SensorReading(sensor_1,7500,1.0)
+main stream > SensorReading(sensor_1,7500,6.0)
+SensorReading(sensor_1,12000,1.0)
+SensorReading(sensor_1,13000,1.0)
+SensorReading(sensor_1,15000,1.0)
+SensorReading(sensor_1,17000,1.0)
+SensorReading(sensor_1,18000,1.0)
+main stream > SensorReading(sensor_1,13000,10.0)
+SensorReading(sensor_1,1000,1.0)
+side output stream > SensorReading(sensor_1,1000,1.0)
 
-  override def processElement(
-      r: SensorReading,
-      ctx: ProcessFunction[SensorReading, SensorReading]#Context,
-      out: Collector[SensorReading]): Unit = {
-    // emit freezing alarm if temperature is below 32F.
-    if (r.temperature < 32.0) {
-      ctx.output(freezingAlarmOutput, s"Freezing Alarm for ${r.id}"+"====" + r.temperature)
-    }
-    // forward all readings to the regular output
-    out.collect(r)
-  }
-}
+ */

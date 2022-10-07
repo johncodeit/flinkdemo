@@ -49,6 +49,7 @@ under the License.
 		<scala.binary.version>2.12</scala.binary.version>
 		<scala.version>2.12.7</scala.version>
 		<log4j.version>2.17.1</log4j.version>
+		<hadoop.version>3.2.2</hadoop.version>
 	</properties>
 
 	<dependencies>
@@ -82,8 +83,49 @@ under the License.
 			<version>${flink.version}</version>
 		</dependency>
 
+		<!-- table api add start  -->
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-table-api-scala-bridge_2.12</artifactId>
+			<version>${flink.version}</version>
+<!--			<scope>provided</scope>-->
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-table-runtime</artifactId>
+			<version>${flink.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-table-planner-loader</artifactId>
+			<version>${flink.version}</version>
+		</dependency>
 
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-connector-jdbc</artifactId>
+			<version>${flink.version}</version>
+		</dependency>
 
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.44</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-json</artifactId>
+			<version>${flink.version}</version>
+		</dependency>
+		<!-- Rocksdb start   -->
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-statebackend-rocksdb</artifactId>
+			<version>${flink.version}</version>
+		</dependency>
+		<!-- Rocksdb end   -->
+
+		<!-- table api add end  -->
 		<!-- Add connector dependencies here. They must be in the default scope (compile). -->
 
 		<!-- Example:
@@ -116,8 +158,25 @@ under the License.
 			<version>${log4j.version}</version>
 			<scope>runtime</scope>
 		</dependency>
-
-
+		<!-- add clickhouse  start -->
+		<dependency>
+			<groupId>ru.yandex.clickhouse</groupId>
+			<artifactId>clickhouse-jdbc</artifactId>
+			<version>0.3.1</version>
+		</dependency>
+		<!-- add clickhouse  end -->
+		<!-- add hadoop  start -->
+		<dependency>
+			<groupId>org.apache.flink</groupId>
+			<artifactId>flink-hadoop-compatibility_2.12</artifactId>
+			<version>${flink.version}</version>
+		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.apache.hadoop</groupId>-->
+<!--			<artifactId>hadoop-client</artifactId>-->
+<!--			<version>${hadoop.version}</version>-->
+<!--		</dependency>-->
+		<!-- add hadoop  end -->
 	</dependencies>
 
 	<build>

@@ -104,16 +104,16 @@ public class TimestampsAndWatermarksOperator<T> extends AbstractStreamOperator<T
 
     element.setTimestamp(newTimestamp);
     output.collect(element);
-    System.out.println("processElement watermark 算子，接收到用户数据"+ element.getValue());
+//    System.out.println("processElement watermark 算子，接收到用户数据"+ element.getValue());
     watermarkGenerator.onEvent(event, newTimestamp, wmOutput);
     //严格来说这里的maxTimestamp，可能修改，也可能不修改要看newTimestamp，与原来的maxTimestamp的那个大
-    System.out.println("processElement 开始调用onEvent方法，修改watermark中的时间，为事件中的时间 maxTimestamp 为" +newTimestamp );
+//    System.out.println("processElement 开始调用onEvent方法，修改watermark中的时间，为事件中的时间 maxTimestamp 为" +newTimestamp );
 
   }
 
   @Override
   public void onProcessingTime(long timestamp) throws Exception {
-    System.out.println("onProcessingTime watermark的周期调用算法被触发，准备调用watermark的周期方法onPeriodicEmit " + LocalDateTime.now());
+//    System.out.println("onProcessingTime watermark的周期调用算法被触发，准备调用watermark的周期方法onPeriodicEmit " + LocalDateTime.now());
     watermarkGenerator.onPeriodicEmit(wmOutput);
 
     final long now = getProcessingTimeService().getCurrentProcessingTime();

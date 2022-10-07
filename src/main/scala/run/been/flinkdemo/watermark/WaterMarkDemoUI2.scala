@@ -13,7 +13,7 @@ import java.time.Duration
  *
  *
  */
-object WaterMarkDemoUI {
+object WaterMarkDemoUI2 {
 
   def test02(env: StreamExecutionEnvironment) = {
     /**
@@ -38,24 +38,16 @@ object WaterMarkDemoUI {
     //为了查看watermark的生成，下面代码获取对应的时间
     inputStream.process(new ProcessFunction[SensorReading,SensorReading] {
       override def processElement(value: SensorReading, ctx: ProcessFunction[SensorReading, SensorReading]#Context, out: Collector[SensorReading]): Unit = {
-        //数据时间戳
-        println("本次时间收到的时间："+value.timestamp)
-        println("本次数据"+ value)
-        //获取处理时间
-        val processTime = ctx.timerService().currentProcessingTime()
-        println("此刻处理时间 = " + processTime)
-        //获取水印
-        val watermarkTime = ctx.timerService().currentWatermark()
-        println("此刻水印时间 = " + watermarkTime)
+        out.collect(value)
       }
-    }).print()
+    }).startNewChain().print()
 
   }
 
   def main(args: Array[String]): Unit = {
     val conf = new Configuration()
     val env = StreamExecutionEnvironment.createLocalEnvironmentWithWebUI(conf)
-    env.setParallelism(1)
+    env.setParallelism(2)
     println(env.getParallelism)
     test02(env)
     env.execute("window job")
@@ -72,34 +64,4 @@ sensor_1,2000,3.0
 sensor_1,5000,4.0
  */
 
-/**
- *
- * SensorReading(sensor_1,2000,1.0)
-本次时间收到的时间：2000
-本次数据SensorReading(sensor_1,2000,1.0)
-此刻处理时间 = 1658848170282
-此刻水印时间 = -9223372036854775808
-
-再次重新执行，第一次水印时间：此刻水印时间 = -9223372036854775808，所以应该是一个固定时间
-SensorReading(sensor_1,3000,2.0)
-本次时间收到的时间：3000
-本次数据SensorReading(sensor_1,3000,2.0)
-此刻处理时间 = 1658848179445
-此刻水印时间 = 1999
-SensorReading(sensor_1,4000,5.0)
-本次时间收到的时间：4000
-本次数据SensorReading(sensor_1,4000,5.0)
-此刻处理时间 = 1658848250156
-此刻水印时间 = 2999
-SensorReading(sensor_1,2000,3.0)
-本次时间收到的时间：2000
-本次数据SensorReading(sensor_1,2000,3.0)
-此刻处理时间 = 1658848502883
-此刻水印时间 = 3999
-SensorReading(sensor_1,5000,4.0)
-本次时间收到的时间：5000
-本次数据SensorReading(sensor_1,5000,4.0)
-此刻处理时间 = 1658848521186
-此刻水印时间 = 3999
- */
 

@@ -56,7 +56,6 @@ object ReducingStateFunctionDemo {
 class ReducingStateDemo extends KeyedProcessFunction[String, SensorReading, SensorReading]{
   private var reducingState: ReducingState[SensorReading] = _
   override def open(parameters: Configuration): Unit = {
-    super.open(parameters)
     //定义描述器
     val reducingStateDescriptor = new ReducingStateDescriptor("max temp state",new MaxTemp(),classOf[SensorReading])
 
@@ -70,6 +69,9 @@ class ReducingStateDemo extends KeyedProcessFunction[String, SensorReading, Sens
   }
 }
 
+/**
+ * 自定义
+ */
 class MaxTemp extends ReduceFunction[SensorReading]{
   override def reduce(value1: SensorReading, value2: SensorReading): SensorReading = {
     if(value1.temperature > value2.temperature) value1 else value2
